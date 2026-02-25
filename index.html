@@ -1,0 +1,5340 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>《益生第一關》 文章分類 搜尋</title>
+  <style>
+    :root{
+      --bg:#fff7ed;
+      --panel:#fff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --link:#1741c3;
+      --shadow:0 6px 20px rgba(0,0,0,.06);
+
+      /* 你的字級設定 */
+      --logo-h:150px;
+      --title-font:36px;
+      --btn-font:22px;
+      --date-font:15px;
+      --name-font:20px;
+
+      --subtitle-font:18px;   /* 副標題字級 */
+
+      --header-h:76px;        /* 仍保留但不再用來推內容 */
+      --toolbar-h:0px;        /* 仍保留但不再用來推內容 */
+    }
+
+    html,body{
+      margin:0;padding:0;color:var(--text);background:var(--bg);
+      font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;
+      overflow:auto;min-height:100%;
+      -webkit-overflow-scrolling:touch;
+    }
+    a{color:var(--link);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .container{max-width:1100px;margin:0 auto;padding:0 16px}
+
+    /* Sticky header */
+    header{
+      position:sticky;top:0;z-index:1000;background:var(--bg);box-shadow:0 1px 0 rgba(0,0,0,.04)
+    }
+    .header-wrap{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:16px;padding:16px 0 8px}
+    .logo img{height:var(--logo-h);width:auto}
+    .title-block h1{margin:0;font-size:var(--title-font);font-weight:800;line-height:1.2}
+    .title-block small{display:block;color:var(--muted);margin-top:4px;font-size:var(--subtitle-font)}
+
+    /* 類別列 */
+    .cats{display:flex;flex-wrap:wrap;gap:12px;padding:10px 0 14px}
+    .cat-btn{
+      --c:#475569;
+      font-size:var(--btn-font);
+      font-weight:800;
+      cursor:pointer;
+      padding:10px 22px;
+      border-radius:999px;
+      border:2px solid var(--c);
+      color:var(--c);
+      background:transparent;
+      transition:all .18s ease;
+      box-shadow:0 1px 0 rgba(0,0,0,.03);
+    }
+    .cat-btn:hover{background:color-mix(in srgb,var(--c) 12%, #fff)}
+    .cat-btn.active{background:var(--c);color:#fff}
+
+    /* category color map */
+    .cat-ALL{--c:#f30a0a;}
+    .cat-益生新知{--c:#2563eb;}
+    .cat-健康食材{--c:#16a34a;}
+    .cat-飲食健康{--c:#f59e0b;}
+    .cat-營養補充{--c:#3a6aed;}
+    .cat-睡眠情緒{--c:#651de1;}
+    .cat-運動生活{--c:#06b6d4;}
+    .cat-健康瘦身{--c:#fa11c0;}
+    .cat-疾病防治{--c:#334155;}
+    .cat-節日飲食{--c:#50ab1c;}
+
+    /* Toolbar (count + active chip + search) */
+    .toolbar{position:sticky;top:var(--header-h);z-index:900;background:var(--bg);box-shadow:0 1px 0 rgba(0,0,0,.04)}
+    .toolbar-inner{display:flex;align-items:center;gap:14px;padding:10px 0}
+    .count{color:var(--muted);white-space:nowrap;font-size:14px}
+
+    /* Active category chip */
+    .active-chip{
+      --c:#475569;
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:6px 14px;border-radius:999px;
+      background:var(--c) !important; /* 確保採用類別色 */
+      color:#fff;
+      border:2px solid var(--c) !important;
+      font-weight:800;font-size:15px;white-space:nowrap;box-shadow:var(--shadow);
+    }
+
+    .search{position:relative;flex:1}
+    .search input{width:100%;height:40px;border-radius:12px;border:1.5px solid #e2e8f0;padding:0 14px 0 38px;background:#fff;box-shadow:var(--shadow);font-size:15px}
+    .search svg{position:absolute;left:10px;top:50%;width:18px;height:18px;transform:translateY(-50%)}
+
+    /* 內容區：把多餘的頂部間距拿掉（sticky 不需推內容）*/
+    main.article-list{padding-top:12px;padding-bottom:60px}
+
+    .list{display:grid;gap:12px}
+    .item{background:var(--panel);border:1px solid #f1f5f9;border-radius:16px;padding:16px 18px;display:grid;grid-template-columns:110px 1fr;align-items:center;box-shadow:var(--shadow)}
+    .date{color:var(--muted);font-size:var(--date-font);font-weight:600}
+    .title a{font-size:var(--name-font);font-weight:800;color:#1741c3}
+
+    #backTop{position:fixed;bottom:30px;right:30px;width:48px;height:48px;border-radius:50%;background:#1741c3;color:#fff;border:none;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2);display:none;align-items:center;justify-content:center;font-size:22px;z-index:1100}
+    #backTop:hover{background:#0f2b85}
+
+    /* Desktop: smaller search */
+    @media (min-width: 992px){
+      .toolbar-inner{gap:16px}
+      .search{flex:0 0 380px}
+    }
+
+    /* Mobile title below logo，toolbar 置頂 */
+    @media (max-width: 640px) {
+      header{position:static;}
+      .toolbar{position:sticky;top:0;}
+      .header-wrap{grid-template-columns:1fr;gap:8px;text-align:center}
+      .title-block h1{font-size:28px}
+      .logo img{height:120px}
+      main.article-list{padding-top:12px}
+      .active-chip{font-size:14px}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container header-wrap">
+      <div class="logo"><img src="logo.png" alt="ProbioFirst Logo"></div>
+      <div class="title-block">
+        <h1>《益生第一關》 文章分類 搜尋</h1>
+        <small>精簡版 曾於 TOPick 或 晴報 刊登</small>
+      </div>
+    </div>
+    <div class="container"><div id="catBar" class="cats"></div></div>
+  </header>
+
+  <div class="toolbar">
+    <div class="container toolbar-inner">
+      <div id="count" class="count">顯示 0 / 共 0 篇</div>
+
+      <!-- 動態顏色 chip -->
+      <div id="activeChip" class="active-chip cat-ALL">全部文章</div>
+
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <input id="q" type="search" placeholder="搜尋已選分類標題">
+      </div>
+    </div>
+  </div>
+
+  <main class="article-list">
+    <div class="container"><div id="list" class="list"></div></div>
+  </main>
+
+  <button id="backTop" title="回到頂部">↑</button>
+
+  <!-- GitHub Pages 流程會在這裡注入 JSON；否則就 fetch data.json -->
+  <script id="INLINE_DATA" type="application/json">[
+  {
+    "date": "2026-02-25",
+    "name": "日日橄欖油護腦力 新歲齊共享好精神",
+    "url": "https://hskgene.com/blogs/probiofirst/cny_olive_oil",
+    "cats": [
+      "健康食材",
+      "飲食健康",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2026-02-11",
+    "name": "新春年菜食菇菌 健康長壽腦精靈",
+    "url": "https://hskgene.com/blogs/probiofirst/mushroom_cny",
+    "cats": [
+      "健康食材",
+      "飲食健康",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2026-02-04",
+    "name": "忙碌都市人的保護傘：脂質體維他命C",
+    "url": "https://hskgene.com/blogs/probiofirst/lipo_vitc",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2026-01-27",
+    "name": "酸種麵包不止酸 緩慢發酵添營養",
+    "url": "https://hskgene.com/blogs/probiofirst/sourdough",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2026-01-21",
+    "name": "碳水減蛋白增 健康飲食新指引",
+    "url": "https://hskgene.com/blogs/probiofirst/fda_guide_2026",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2026-01-14",
+    "name": "三高不是三種病 而是代謝失衡的警號",
+    "url": "https://hskgene.com/blogs/probiofirst/mets",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2026-01-06",
+    "name": "重新讀懂血脂 真正評估心血管風險",
+    "url": "https://hskgene.com/blogs/probiofirst/tg_ldl",
+    "cats": [
+      "飲食健康",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2025-12-31",
+    "name": "年終回顧健康日常 老中青各有所需",
+    "url": "https://hskgene.com/blogs/probiofirst/health_review",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2025-12-24",
+    "name": "冬日打邊爐不只暖身：脆肉鯇與清遠雞美味又營養",
+    "url": "https://hskgene.com/blogs/probiofirst/hotpot_fish_chicken",
+    "cats": [
+      "健康食材",
+      "飲食健康",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2025-12-17",
+    "name": "久坐不只是累：山核桃朱古力守護你的心腦血管",
+    "url": "https://hskgene.com/blogs/probiofirst/chocolate-brain-cvd",
+    "cats": [
+      "健康食材",
+      "飲食健康",
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2025-12-09",
+    "name": "栗子愈煮愈健康？多酚、抗性澱粉與腸道保護力的冬日科學",
+    "url": "https://hskgene.com/blogs/probiofirst/chestnut",
+    "cats": [
+      "益生新知",
+      "健康食材"
+    ]
+  },
+  {
+    "date": "2025-12-02",
+    "name": "重建專注力三大元素：手寫、蛋白質、益生菌",
+    "url": "https://hskgene.com/blogs/probiofirst/handwriting_typing_study",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2025-11-26",
+    "name": "藍莓護心腦腸健康 果乾果棒效果好又方便",
+    "url": "https://hskgene.com/blogs/probiofirst/blueberries_ii",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2025-11-18",
+    "name": "健康老化的關鍵 腸道健康好重要",
+    "url": "https://hskgene.com/blogs/probiofirst/elderly_diet",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2025-11-12",
+    "name": "甜美藍莓天然低糖 抗氧化又幫助穩糖",
+    "url": "https://hskgene.com/blogs/probiofirst/blueberries_i",
+    "cats": [
+      "健康食材",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2025-11-04",
+    "name": "代糖實影響腸道 天然減甜更健康",
+    "url": "https://hskgene.com/blogs/probiofirst/articifical_sweetener",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2025-10-22",
+    "name": "家中長幼互關愛 親情營養致安康",
+    "url": "https://hskgene.com/blogs/probiofirst/elderly_family_health_protein",
+    "cats": []
+  },
+  {
+    "date": "2025-10-15",
+    "name": "Fibermaxxing不可過量 益生菌調理纖維效應",
+    "url": "https://hskgene.com/blogs/probiofirst/fibermaxxing",
+    "cats": []
+  },
+  {
+    "date": "2025-10-08",
+    "name": "秋風起過敏頻現 益生菌維他命D有幫助",
+    "url": "https://hskgene.com/blogs/probiofirst/allergy_vitd_zinc",
+    "cats": []
+  },
+  {
+    "date": "2025-09-24",
+    "name": "中秋柚子消滯解膩 利腸抗炎護呼吸道",
+    "url": "https://hskgene.com/blogs/probiofirst/pomelo",
+    "cats": []
+  },
+  {
+    "date": "2025-09-17",
+    "name": "智能手錶監測健康  提醒多吃蔬果益生菌",
+    "url": "https://hskgene.com/blogs/probiofirst/smart_watch",
+    "cats": []
+  },
+  {
+    "date": "2025-09-09",
+    "name": "合桃補腦護心降血壓 亦改善腸道菌群",
+    "url": "https://hskgene.com/blogs/probiofirst/article-4",
+    "cats": []
+  },
+  {
+    "date": "2025-09-09",
+    "name": "合桃補腦護心降血壓 亦改善腸道菌群",
+    "url": "https://hskgene.com/blogs/probiofirst/walnut-brain",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2025-09-03",
+    "name": "校園生活好有意義  飲足水益生菌助學習",
+    "url": "https://hskgene.com/blogs/probiofirst/school_life",
+    "cats": []
+  },
+  {
+    "date": "2025-08-27",
+    "name": "週末運動有效果 蛋白質益生菌再補足",
+    "url": "https://hskgene.com/blogs/probiofirst/weekend_warriors",
+    "cats": []
+  },
+  {
+    "date": "2025-08-20",
+    "name": "多種療法治癌症 腸道益菌有幫助",
+    "url": "https://hskgene.com/blogs/probiofirst/cancer_therapy_microbiome",
+    "cats": []
+  },
+  {
+    "date": "2025-08-13",
+    "name": "減重唔使戒脂肪 牛油果飽肚又有益",
+    "url": "https://hskgene.com/blogs/probiofirst/avocado_weight",
+    "cats": []
+  },
+  {
+    "date": "2025-08-06",
+    "name": "超加工食物令你肥胖易老 原型飲食益生菌有助減重逆齡",
+    "url": "https://hskgene.com/blogs/probiofirst/obesity_age",
+    "cats": []
+  },
+  {
+    "date": "2025-07-30",
+    "name": "冬瓜消暑改善代謝  瓜皮瓜籽穩糖降脂",
+    "url": "https://hskgene.com/blogs/probiofirst/wintermelon",
+    "cats": []
+  },
+  {
+    "date": "2025-07-23",
+    "name": "暑假旅遊腸道紊亂　補水益生菌舒壓能改善",
+    "url": "https://hskgene.com/blogs/probiofirst/summer_travel_constipation",
+    "cats": []
+  },
+  {
+    "date": "2025-07-16",
+    "name": "青木瓜熟木瓜 護肝調糖益腸道",
+    "url": "https://hskgene.com/blogs/probiofirst/papaya",
+    "cats": []
+  },
+  {
+    "date": "2025-07-09",
+    "name": "熱濕夏日肌膚傷 DHA穩膚抗濕敏發炎",
+    "url": "https://hskgene.com/blogs/probiofirst/summer_skin_dha",
+    "cats": []
+  },
+  {
+    "date": "2025-07-02",
+    "name": "荔枝：營養、香氣與健康風險",
+    "url": "https://hskgene.com/blogs/probiofirst/lychee",
+    "cats": []
+  },
+  {
+    "date": "2025-06-25",
+    "name": "思緒奔馳難以入睡 調整節奏腸道開始",
+    "url": "https://hskgene.com/blogs/probiofirst/racing_thoughts_sleep",
+    "cats": []
+  },
+  {
+    "date": "2025-06-18",
+    "name": "夏季高蛋白食材 需警覺菌害胺毒",
+    "url": "https://hskgene.com/blogs/probiofirst/protein_food_spoilage",
+    "cats": []
+  },
+  {
+    "date": "2025-06-11",
+    "name": "番茄漿果類蔬菜　色香味營養兼備",
+    "url": "https://hskgene.com/blogs/probiofirst/tomato",
+    "cats": []
+  },
+  {
+    "date": "2025-06-04",
+    "name": "體味藏印象訊號  植物性飲食助改善",
+    "url": "https://hskgene.com/blogs/probiofirst/body_odor_diet",
+    "cats": []
+  },
+  {
+    "date": "2025-05-28",
+    "name": "減緩升糖增纖維  綠豆粽營養更到位",
+    "url": "https://hskgene.com/blogs/probiofirst/zhongzi",
+    "cats": []
+  },
+  {
+    "date": "2025-05-21",
+    "name": "DHA益菌協同升級　記憶專注同時強化",
+    "url": "https://hskgene.com/blogs/probiofirst/dha",
+    "cats": []
+  },
+  {
+    "date": "2025-05-14",
+    "name": "椰菜高纖低熱量 抗炎護胃助免疫",
+    "url": "https://hskgene.com/blogs/probiofirst/cabbage",
+    "cats": []
+  },
+  {
+    "date": "2025-05-07",
+    "name": "讓媽媽自在大笑 運動營養改善尿滲",
+    "url": "https://hskgene.com/blogs/probiofirst/urinaryincontinence",
+    "cats": []
+  },
+  {
+    "date": "2025-04-30",
+    "name": "壓力腸躁OUT！益生菌＋DHA聯手護腸紓壓",
+    "url": "https://hskgene.com/blogs/probiofirst/ibs_lpc_algae_oil",
+    "cats": []
+  },
+  {
+    "date": "2025-04-23",
+    "name": "春夏抗氧化「超級菜」：蕃薯葉的營養威力超乎想像",
+    "url": "https://hskgene.com/blogs/probiofirst/sweet-potato-leaves",
+    "cats": []
+  },
+  {
+    "date": "2025-04-15",
+    "name": "奇異果三重功效：紓便秘、護腸道、助消化",
+    "url": "https://hskgene.com/blogs/probiofirst/kiwi",
+    "cats": [
+      "健康食材",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2025-04-09",
+    "name": "腸易激困擾影響生活？益纖菌舒緩 IBS. IBS affecting your life? Probiotics Gold can help",
+    "url": "https://hskgene.com/blogs/probiofirst/ibs_probiotics",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2025-04-01",
+    "name": "踎低起身見頭暈 姿勢益纖蛋白穩血壓",
+    "url": "https://hskgene.com/blogs/probiofirst/dizziness",
+    "cats": [
+      "營養補充",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2025-03-25",
+    "name": "缺DHA致抑鬱情緒打結 素食者需補充大腦營養",
+    "url": "https://hskgene.com/blogs/probiofirst/algae-oil-mood",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2025-03-18",
+    "name": "無腥素食純淨藻油 DHA護眼潤膚有妙方",
+    "url": "https://hskgene.com/blogs/probiofirst/algae_oil_eye_skin",
+    "cats": [
+      "營養補充",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2025-03-11",
+    "name": "餐前一顆蘋果 穩血糖抗肥胖 改善腸道健康",
+    "url": "https://hskgene.com/blogs/probiofirst/apple_weight",
+    "cats": [
+      "健康食材",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2025-03-04",
+    "name": "大豆蛋白及異黃酮 滋養內外煥發光彩",
+    "url": "https://hskgene.com/blogs/probiofirst/soy_women",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "運動生活",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2025-02-26",
+    "name": "營養烹調選對油 美味健康勝一籌",
+    "url": "https://hskgene.com/blogs/probiofirst/oil-cooking",
+    "cats": [
+      "健康食材",
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2025-02-19",
+    "name": "聰明選擇植物油：護心、抗炎、營養滿分！",
+    "url": "https://hskgene.com/blogs/probiofirst/oil-choice",
+    "cats": [
+      "健康食材",
+      "飲食健康",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2025-02-11",
+    "name": "情人節連慶元宵：植物性美食，健康美味雙收",
+    "url": "https://hskgene.com/blogs/probiofirst/plant_based_food_valentine",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2025-02-04",
+    "name": "新春大吉要有柑桔 利腸助眠令你開心",
+    "url": "https://hskgene.com/blogs/probiofirst/cny_citrus",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "睡眠情緒",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2025-01-21",
+    "name": "大掃除清潔廚房 食物安全有保障",
+    "url": "https://hskgene.com/blogs/probiofirst/kitchen_microbiome",
+    "cats": [
+      "飲食健康",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2025-01-16",
+    "name": "益生菌配合膳食纖維 減壓力改善情緒",
+    "url": "https://hskgene.com/blogs/probiofirst/fiber_probiotics_mood",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2025-01-07",
+    "name": "蘭花莖石斛富含多醣 利腸控糖護肝助免疫",
+    "url": "https://hskgene.com/blogs/probiofirst/dendrobium",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2024-12-17",
+    "name": "輕鬆減重從膳食纖維開始",
+    "url": "https://hskgene.com/blogs/probiofirst/fiber_weight",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2024-12-10",
+    "name": "呼吸道合胞病毒RSV: 秋冬時長幼都應防範",
+    "url": "https://hskgene.com/blogs/probiofirst/rsv",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2024-12-03",
+    "name": "黑朱古力增飽腹感 促進代謝有助減重",
+    "url": "https://hskgene.com/blogs/probiofirst/chocolate_weight_management",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2024-11-26",
+    "name": "睡眠不足欠安穩 益緒寧紓壓助眠",
+    "url": "https://hskgene.com/blogs/probiofirst/lpc-37_sleep",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2024-11-19",
+    "name": "腸道菌健康三要素：少加工食物、攝取纖維、飲水",
+    "url": "https://hskgene.com/blogs/probiofirst/gut_diversity_diet",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2024-11-12",
+    "name": "秋冬補充有機鋅 抗氧化增強免疫力",
+    "url": "https://hskgene.com/blogs/probiofirst/organic_zinc",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2024-11-05",
+    "name": "學習與考試壓力多—益緒寧助您紓壓免焦慮",
+    "url": "https://hskgene.com/blogs/probiofirst/academic_stress",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2024-10-29",
+    "name": "大蒜素抗氧化減感染 提取物蒜味淡易入口",
+    "url": "https://hskgene.com/blogs/probiofirst/allicin",
+    "cats": [
+      "健康食材",
+      "營養補充",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2024-10-22",
+    "name": "瘦得健康：合生元配合高纖飲食能高效減重",
+    "url": "https://hskgene.com/blogs/probiofirst/2024_10_weight_synbiotic",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2024-10-15",
+    "name": "膳食纖維對大腦影響奇妙 聚葡萄糖提升認知改善情緒",
+    "url": "https://hskgene.com/blogs/probiofirst/brain_pdx",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2024-10-08",
+    "name": "乳鐵蛋白結合有機鐵 長者溫和補鐵新方案",
+    "url": "https://hskgene.com/blogs/probiofirst/iron_lactoferrin",
+    "cats": [
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2024-10-02",
+    "name": "水溶性膳食纖維 果膠健康好處多",
+    "url": "https://hskgene.com/blogs/probiofirst/pectin",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2024-09-24",
+    "name": "早餐對健康好重要 更助調節生理時鐘",
+    "url": "https://hskgene.com/blogs/probiofirst/breakfast",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2024-09-10",
+    "name": "中秋團圓食海鮮 營養穩糖更利腸",
+    "url": "https://hskgene.com/blogs/probiofirst/seafood",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2024-09-03",
+    "name": "開學忙碌壓力增 正餐謹記需進食",
+    "url": "https://hskgene.com/blogs/probiofirst/sch_meal_mood",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2024-08-27",
+    "name": "麥皮β-葡聚糖有益 減重降脂利腸道菌",
+    "url": "https://hskgene.com/blogs/probiofirst/oat_beta_glucan",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2024-08-20",
+    "name": "地中海飲食好健康 抗炎護心利腸減重",
+    "url": "https://hskgene.com/blogs/probiofirst/mediterraneandiet",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2024-08-13",
+    "name": "水中運動多樂趣 強身減壓利情緒",
+    "url": "https://hskgene.com/blogs/probiofirst/watersports_mood",
+    "cats": [
+      "睡眠情緒",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2024-08-06",
+    "name": "夏日新興凝膠食品 飽腹利腸有助健康",
+    "url": "https://hskgene.com/blogs/probiofirst/fiber_jelly",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2024-07-30",
+    "name": "炎炎夏日運動營養 益纖蛋白更能補水",
+    "url": "https://hskgene.com/blogs/probiofirst/soyprotein_sports",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2024-07-23",
+    "name": "膳食纖維保障腸道健康 不可消化碳水化合物有益",
+    "url": "https://hskgene.com/blogs/probiofirst/crabs_gut",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2024-07-16",
+    "name": "水溶性纖維好有益 助控血糖血脂體重",
+    "url": "https://hskgene.com/blogs/probiofirst/solublefibre",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2024-07-09",
+    "name": "夏日消暑食西瓜 利尿減肥降血壓",
+    "url": "https://hskgene.com/blogs/probiofirst/watermelon",
+    "cats": [
+      "健康食材",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2024-07-02",
+    "name": "香蕉高鉀營養豐富 能助減重睡眠情緒",
+    "url": "https://hskgene.com/blogs/probiofirst/banana",
+    "cats": [
+      "健康食材",
+      "睡眠情緒",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2024-06-26",
+    "name": "飲食纖維逐漸增加 腸胃保健較少不適",
+    "url": "https://hskgene.com/blogs/probiofirst/fiber_bloating",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2024-06-18",
+    "name": "芒果味道美富營養 抗炎穩血糖益腸道",
+    "url": "https://hskgene.com/blogs/probiofirst/mango",
+    "cats": [
+      "益生新知",
+      "健康食材"
+    ]
+  },
+  {
+    "date": "2024-06-11",
+    "name": "合桃美食贈父親 益腦利腸更護心",
+    "url": "https://hskgene.com/blogs/probiofirst/walnut",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "營養補充",
+      "睡眠情緒",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2024-06-04",
+    "name": "端午品嘗小青柑 益腸抗壓減體重",
+    "url": "https://hskgene.com/blogs/probiofirst/ganputea",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "睡眠情緒",
+      "健康瘦身",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2024-05-28",
+    "name": "膳食纖維非常重要 能保腸道屏障健康",
+    "url": "https://hskgene.com/blogs/probiofirst/fiber_gut_barrier",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2024-05-21",
+    "name": "感冒咳嗽仍在流行 飲食益生菌助復原",
+    "url": "https://hskgene.com/blogs/probiofirst/flu-cough",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2024-05-07",
+    "name": "女性健康需要關懐 益菌美食賀母親節",
+    "url": "https://hskgene.com/blogs/probiofirst/femalehealth",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "健康瘦身",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2024-04-23",
+    "name": "Vitamin D強骨助免疫 日曬飲食齊齊補足",
+    "url": "https://hskgene.com/blogs/probiofirst/vitd",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2024-04-16",
+    "name": "稻米纖維好有益 抗性澱粉助減肥",
+    "url": "https://hskgene.com/blogs/probiofirst/rice_resistant_starch",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2024-04-09",
+    "name": "健康小食腦力增 健康腸道考試佳",
+    "url": "https://hskgene.com/blogs/probiofirst/dse",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "睡眠情緒",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2024-04-02",
+    "name": "芫茜祛味又抗菌 降壓健腸抗氧化",
+    "url": "https://hskgene.com/blogs/probiofirst/coriander",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2024-03-26",
+    "name": "蘋果最好連皮吃 四季常吃保健康",
+    "url": "https://hskgene.com/blogs/probiofirst/apple",
+    "cats": [
+      "益生新知",
+      "健康食材"
+    ]
+  },
+  {
+    "date": "2024-03-19",
+    "name": "善用總膳食研究 廣泛評估保健康",
+    "url": "https://hskgene.com/blogs/probiofirst/tds",
+    "cats": [
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2024-03-12",
+    "name": "潮濕天氣損身心 濕度舒適護健康",
+    "url": "https://hskgene.com/blogs/probiofirst/humid",
+    "cats": [
+      "睡眠情緒",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2024-03-05",
+    "name": "微量元素鋅硒硼銅 攝取不足應要補充",
+    "url": "https://hskgene.com/blogs/probiofirst/trace_element",
+    "cats": [
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2024-02-27",
+    "name": "膳食纖維聚葡萄糖 控糖減重有益腸道",
+    "url": "https://hskgene.com/blogs/probiofirst/polydextrose3",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2024-02-20",
+    "name": "身體健康需鎂質 攝取不足要補充",
+    "url": "https://hskgene.com/blogs/probiofirst/magnesium",
+    "cats": [
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2024-02-13",
+    "name": "伴侶恩愛互扶持 健康財富自然來",
+    "url": "https://hskgene.com/blogs/probiofirst/valentines_day",
+    "cats": [
+      "益生新知",
+      "睡眠情緒",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2024-02-06",
+    "name": "「液體黃金」送贈親友 初榨橄欖油好健康",
+    "url": "https://hskgene.com/blogs/probiofirst/evoo_cny",
+    "cats": [
+      "健康食材",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2024-01-30",
+    "name": "選益生菌要看標籤 列明菌株實在必須",
+    "url": "https://hskgene.com/blogs/probiofirst/hkcc_probiotics_report_response",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2024-01-23",
+    "name": "過度補鐵壞腸道 需重調控與吸收",
+    "url": "https://hskgene.com/blogs/probiofirst/iron_supplement",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2024-01-16",
+    "name": "腸道菌失衡致病 益纖菌食用保健",
+    "url": "https://hskgene.com/blogs/probiofirst/diet_gut_micro_balance",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2024-01-09",
+    "name": "各種蘿蔔菜式多 抗氧解膩保健康",
+    "url": "https://hskgene.com/blogs/probiofirst/radish",
+    "cats": [
+      "健康食材",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2024-01-02",
+    "name": "亂食減壓損健康 抗氧飲食利身心",
+    "url": "https://hskgene.com/blogs/probiofirst/diet_and_mind",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2023-12-27",
+    "name": "高血尿酸致痛風 益生菌能夠緩解",
+    "url": "https://hskgene.com/blogs/probiofirst/gout",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-12-19",
+    "name": "朱古力健康味美 抗氧益腦助醒神",
+    "url": "https://hskgene.com/blogs/probiofirst/chocolate_cognition",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "睡眠情緒",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-12-12",
+    "name": "健康飲食多樣性 減風險利腸道菌",
+    "url": "https://hskgene.com/blogs/probiofirst/diet_diversity_elderly",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-12-05",
+    "name": "膳食纖維助減重 配益纖菌更健康",
+    "url": "https://hskgene.com/blogs/probiofirst/probitics_obesity_trial",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2023-11-28",
+    "name": "mRNA疫苗發展快 益菌配合助免疫",
+    "url": "https://hskgene.com/blogs/probiofirst/mrna_vaccine",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-11-21",
+    "name": "山核桃改善肥胖問題 益生菌配合助降血脂",
+    "url": "https://hskgene.com/blogs/probiofirst/pecan",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "營養補充",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-11-14",
+    "name": "做運動延年益壽 益生菌提升活力",
+    "url": "https://hskgene.com/blogs/probiofirst/exercise_longevity",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-11-07",
+    "name": "抗生素能令病菌抗藥 益生菌善用助防感染",
+    "url": "https://hskgene.com/blogs/probiofirst/antibiotics",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-10-31",
+    "name": "肺炎支原體近期肆虐 脂質維他命C助防治",
+    "url": "https://hskgene.com/blogs/probiofirst/pneumonia_vitc",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-10-24",
+    "name": "萬聖節食糖果勿過量 溶壞菌補益菌防蛀牙",
+    "url": "https://hskgene.com/blogs/probiofirst/halloween_dental_caries",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2023-10-17",
+    "name": "重陽品嚐菊花茶 平肝明目抗氧化",
+    "url": "https://hskgene.com/blogs/probiofirst/chrysanthemum",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2023-10-10",
+    "name": "香水檸檬可抗炎 促進益生菌護腸",
+    "url": "https://hskgene.com/blogs/probiofirst/citron_tea",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2023-10-03",
+    "name": "腸道大腦雙向溝通 冥想益生菌助紓壓",
+    "url": "https://hskgene.com/blogs/probiofirst/meditation-gba",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-09-26",
+    "name": "長假致社交性時差 注意作息均衡飲食",
+    "url": "https://hskgene.com/blogs/probiofirst/social_jetlag",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2023-09-19",
+    "name": "乳鐵蛋白益處多 調控補鐵健腸道",
+    "url": "https://hskgene.com/blogs/probiofirst/lactoferrin_iron_gut-health",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-09-14",
+    "name": "益生菌營養補充劑 個案支持效果顯著",
+    "url": "https://hskgene.com/blogs/probiofirst/product-case-sharing",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-09-07",
+    "name": "增強活力抗衰老 NMN 修復端粒助長壽",
+    "url": "https://hskgene.com/blogs/probiofirst/telomere_nmn",
+    "cats": [
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-08-31",
+    "name": "開學需預防流感 益生菌維他命C",
+    "url": "https://hskgene.com/blogs/probiofirst/probiotics-vitaminc",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-08-24",
+    "name": "蛋白質配益生菌 有助運動與作息",
+    "url": "https://hskgene.com/blogs/probiofirst/ps128-soyprotein-exercise",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2023-08-17",
+    "name": "檢測方法多様化 自我量度控血糖",
+    "url": "https://hskgene.com/blogs/probiofirst/blood_glucose_test",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-08-10",
+    "name": "益生菌減天熱疲累 蛋白質可幫助睡眠",
+    "url": "https://hskgene.com/blogs/probiofirst/summer-food",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2023-08-10",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/probiotics",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-08-10",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/research",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "健康瘦身",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2023-08-10",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/protein",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-08-03",
+    "name": "姬松茸湯抗氧化 增強免疫降血脂",
+    "url": "https://hskgene.com/blogs/probiofirst/agaricus-blazei-murrill",
+    "cats": [
+      "健康食材",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-07-27",
+    "name": "夏日暢飲冷泡茶 寧神助腸道健康",
+    "url": "https://hskgene.com/blogs/probiofirst/cold_brew_tea",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2023-07-20",
+    "name": "食用海藻富營養 利腸護心助減重",
+    "url": "https://hskgene.com/blogs/probiofirst/seaweeds",
+    "cats": [
+      "健康食材",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2023-07-13",
+    "name": "益纖菌加膳食纖維 減重纖體保障健康",
+    "url": "https://hskgene.com/blogs/probiofirst/dietary_fiber_probiotics",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2023-07-06",
+    "name": "蛋白配運動助修身 益纖菌纖體保健康",
+    "url": "https://hskgene.com/blogs/probiofirst/soy-protein_exercise_muscle",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2023-06-29",
+    "name": "平衡腸道微生態 助紓緩玫瑰痤瘡",
+    "url": "https://hskgene.com/blogs/probiofirst/rosacea_gut-microbiome_diet",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-06-22",
+    "name": "端午粽子配靚茶 消滯去膩又減脂",
+    "url": "https://hskgene.com/blogs/probiofirst/rice-dumplings_tea",
+    "cats": [
+      "飲食健康",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2023-06-15",
+    "name": "NMN蛋白質益緒寧 為爸爸健康「增值」",
+    "url": "https://hskgene.com/blogs/probiofirst/nmn-ps128-protein-dietary-supplements-for-father",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "睡眠情緒",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2023-06-08",
+    "name": "基層醫療保健康 營養護理需益菌",
+    "url": "https://hskgene.com/blogs/probiofirst/primary_healthcare",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-06-01",
+    "name": "植物蛋白質飲食 有助健康地瘦身",
+    "url": "https://hskgene.com/blogs/probiofirst/plant_based_protein_diet",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2023-05-18",
+    "name": "素食營養要均衡 鐵鈣攝取需充足",
+    "url": "https://hskgene.com/blogs/probiofirst/iron_supplement_for_vegetarian",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-05-11",
+    "name": "母親育兒勞身心 營養補充保健康",
+    "url": "https://hskgene.com/blogs/probiofirst/mothers-day_maternal-stress_probiotics",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2023-05-04",
+    "name": "助媽媽健康美麗 NMN逆齡增活力",
+    "url": "https://hskgene.com/blogs/probiofirst/nmn_antiaging_supplements",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "運動生活",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2023-04-27",
+    "name": "勞心勞力需營養 益纖蛋白保健康",
+    "url": "https://hskgene.com/blogs/probiofirst/protein_for_workers",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2023-04-20",
+    "name": "慎用咖啡因提神 益緒寧紓壓助眠成績佳",
+    "url": "https://hskgene.com/blogs/probiofirst/ps128_caffeine",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2023-04-13",
+    "name": "乳鐵蛋白抗流感 助防禦加快復原",
+    "url": "https://hskgene.com/blogs/probiofirst/lactoferrin_immunity",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-03-30",
+    "name": "長假港人愛外遊 保健勿忘益纖菌",
+    "url": "https://hskgene.com/blogs/probiofirst/travelers-diarrhea_motion-sickness",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-03-23",
+    "name": "清明節登山掃墓 身心腸道同得益",
+    "url": "https://hskgene.com/blogs/probiofirst/chingming_hiking",
+    "cats": [
+      "益生新知",
+      "睡眠情緒",
+      "運動生活",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2023-03-16",
+    "name": "淮山平穩賀爾蒙 維持更年期骨質",
+    "url": "https://hskgene.com/blogs/probiofirst/chinese-yam_menopausal-symptom",
+    "cats": [
+      "健康食材",
+      "飲食健康",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-03-09",
+    "name": "益纖菌能抗衰老 腸道健康樂頤年",
+    "url": "https://hskgene.com/blogs/probiofirst/antiaging_probiotics",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-03-02",
+    "name": "培植蟲草花明目 健腸降血脂血糖",
+    "url": "https://hskgene.com/blogs/probiofirst/cordyceps_flower",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-02-23",
+    "name": "紅肉食用需適量 TMAO水平低護心血管",
+    "url": "https://hskgene.com/blogs/probiofirst/tmao_cardiovascular-diseases_red-meat",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-02-16",
+    "name": "春筍高纖紓便秘 助降低血脂血糖",
+    "url": "https://hskgene.com/blogs/probiofirst/bamboo_shoot",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-02-09",
+    "name": "伴侶互動愈甜蜜 身體心靈更健康",
+    "url": "https://hskgene.com/blogs/probiofirst/health-implications-of-love",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "睡眠情緒",
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-02-02",
+    "name": "立春宜吃鮮菜蔬 韭菜當造益處多",
+    "url": "https://hskgene.com/blogs/probiofirst/chives",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2023-01-26",
+    "name": "慎選食品乳化劑 美味健康要兼顧",
+    "url": "https://hskgene.com/blogs/probiofirst/food_additives",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-01-19",
+    "name": "新春吃喝好開心 勿忘低脂高纖維",
+    "url": "https://hskgene.com/blogs/probiofirst/cnyfood",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2023-01-12",
+    "name": "長新冠：益生菌加蛋白質 增強肌肉助復原",
+    "url": "https://hskgene.com/blogs/probiofirst/long-covid_sarcopenia",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2023-01-05",
+    "name": "NMN何止助活力 臨床證實多功效",
+    "url": "https://hskgene.com/blogs/probiofirst/nmn_clinical-trials",
+    "cats": [
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-12-29",
+    "name": "膳食纖維必須吃 聚葡萄糖利腸道",
+    "url": "https://hskgene.com/blogs/probiofirst/polydextrose_",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2022-12-22",
+    "name": "賀聖誕盡情吃喝 益纖菌保障健康",
+    "url": "https://hskgene.com/blogs/probiofirst/xmas_alcohol",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2022-12-15",
+    "name": "益纖菌+維他命C 防治呼吸道感染",
+    "url": "https://hskgene.com/blogs/probiofirst/uri_probiotics_vitamin-c",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-12-08",
+    "name": "尼人基因傳現代 自古益菌保健康",
+    "url": "https://hskgene.com/blogs/probiofirst/neanderthal_and_gut_microbiome",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2022-12-01",
+    "name": "胰島素控糖百年 益生菌更添助力",
+    "url": "https://hskgene.com/blogs/probiofirst/100_years_of_insulin",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-11-24",
+    "name": "慶祝豐收感恩節 味美營養南瓜批",
+    "url": "https://hskgene.com/blogs/probiofirst/pumpkin-pie_thanksgiving",
+    "cats": [
+      "健康食材",
+      "飲食健康",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2022-11-17",
+    "name": "捱夜睇波血糖飊 益纖菌可保穩定",
+    "url": "https://hskgene.com/blogs/probiofirst/sleeplate_worldcup",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2022-11-10",
+    "name": "雙十一搶購焦慮 「LPC-37」益生菌紓緩壓力",
+    "url": "https://hskgene.com/blogs/probiofirst/shopping_anxiety_ps128",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2022-11-03",
+    "name": "挑選營養補充品 檢測科研最重要",
+    "url": "https://hskgene.com/blogs/probiofirst/dietary-supplement",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2022-10-27",
+    "name": "萬聖節護心抗氧 食黑朱古力果仁",
+    "url": "https://hskgene.com/blogs/probiofirst/halloween-and-chocolate",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2022-10-20",
+    "name": "益纎菌延緩衰老 提升耆英免疫力",
+    "url": "https://hskgene.com/blogs/probiofirst/elderly_gut_health",
+    "cats": []
+  },
+  {
+    "date": "2022-10-13",
+    "name": "益生菌輔助母乳 保嬰兒腸道健康",
+    "url": "https://hskgene.com/blogs/probiofirst/infant_gut_microbiome",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2022-10-06",
+    "name": "益生菌 預防感染減焦慮 疫後旅遊好輕鬆",
+    "url": "https://hskgene.com/blogs/probiofirst/travel",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2022-09-29",
+    "name": "益菌強身助免疫 促進長新冠復原",
+    "url": "https://hskgene.com/blogs/probiofirst/longcovid",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-09-29",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/bc30",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-09-29",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/immune-system",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "運動生活",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-09-29",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/gut-microbiome",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "健康瘦身",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2022-09-29",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/epidemic-prevention",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-09-29",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/long-covid",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-09-22",
+    "name": "銀耳多醣功效廣 美肌護腸身體壯",
+    "url": "https://hskgene.com/blogs/probiofirst/snowfungus",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2022-09-22",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/microbiome",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "健康瘦身",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2022-09-22",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/food",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "健康瘦身",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2022-09-22",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/autumn",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2022-09-22",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/snow-fungus",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2022-09-15",
+    "name": "無花果鮮乾都好 益腸通便抗炎症",
+    "url": "https://hskgene.com/blogs/probiofirst/fig",
+    "cats": [
+      "健康食材",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-09-08",
+    "name": "中秋團圓飲靚湯 菇菌湯料好健康",
+    "url": "https://hskgene.com/blogs/probiofirst/mid-autumn",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2022-09-01",
+    "name": "補充維他命C與D 平衡免疫防感染",
+    "url": "https://hskgene.com/blogs/probiofirst/vitaminc_d",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-08-25",
+    "name": "開學家長感壓力 益生菌靜觀紓解",
+    "url": "https://hskgene.com/blogs/probiofirst/parental-stress-and-probiotics",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2022-08-18",
+    "name": "橄欖油健康有營 益腸護心抗氧化",
+    "url": "https://hskgene.com/blogs/probiofirst/olive_oil",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2022-08-11",
+    "name": "最短暑假盡放鬆 草本紓壓利腸道",
+    "url": "https://hskgene.com/blogs/probiofirst/relax_complete",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2022-08-04",
+    "name": "「呷醋」降血脂血糖 抗氧化提味減鈉",
+    "url": "https://hskgene.com/blogs/probiofirst/vinegar",
+    "cats": [
+      "健康食材",
+      "飲食健康",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-07-28",
+    "name": "益生菌增強免疫 防感染緩長新冠",
+    "url": "https://hskgene.com/blogs/probiofirst/probiotics_long_covid",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-07-21",
+    "name": "苦瓜解熱益腸胃 降低血糖助減重",
+    "url": "https://hskgene.com/blogs/probiofirst/bitter-melon",
+    "cats": [
+      "益生新知",
+      "健康食材"
+    ]
+  },
+  {
+    "date": "2022-07-14",
+    "name": "嫩薑老薑皆好薑 利腸抗炎減疼痛",
+    "url": "https://hskgene.com/blogs/probiofirst/ginger",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2022-07-07",
+    "name": "抗氧化物補充劑 保健功能作依歸",
+    "url": "https://hskgene.com/blogs/probiofirst/antioxidant",
+    "cats": [
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-07-07",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/1",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2022-07-07",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/3",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-06-23",
+    "name": "塵蟎致哮喘濕疹 益纖菌減少過敏",
+    "url": "https://hskgene.com/blogs/probiofirst/hdmallergy",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-06-16",
+    "name": "益緒寧幫爸爸紓緩壓力 齊做運動好快樂",
+    "url": "https://hskgene.com/blogs/probiofirst/ps128_fathersday",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2022-06-16",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/4",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "健康瘦身",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2022-06-09",
+    "name": "「CaAKG」利肌益腸抗衰老 長者機能保活力",
+    "url": "https://hskgene.com/blogs/probiofirst/caakg",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-05-26",
+    "name": "端午粽子升糖勁 步行運動穩血糖",
+    "url": "https://hskgene.com/blogs/probiofirst/dragon_boat_festival",
+    "cats": [
+      "運動生活",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2022-05-26",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/2",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "運動生活",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2022-05-19",
+    "name": "初夏蘆筍營養豐 消炎降脂又抗癌",
+    "url": "https://hskgene.com/blogs/probiofirst/asparagus",
+    "cats": [
+      "健康食材",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-05-12",
+    "name": "益生菌 菌株功能各不同 認清選擇才穩妥",
+    "url": "https://hskgene.com/blogs/probiofirst/choose_probiotics",
+    "cats": []
+  },
+  {
+    "date": "2022-05-05",
+    "name": "CoQ10+維他命E 美肌抗三高 送給媽媽健康美麗",
+    "url": "https://hskgene.com/blogs/probiofirst/coq10-e",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2022-04-28",
+    "name": "「GSH」抗氧化延緩衰老 護肝增強抵抗力",
+    "url": "https://hskgene.com/blogs/probiofirst/glutathione_gsh",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-04-21",
+    "name": "瞓夠考試表現好 益緒寧減輕壓力助睡眠",
+    "url": "https://hskgene.com/blogs/probiofirst/ps128_exam",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2022-04-21",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/nutrition-supplement",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-04-21",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/sleep",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-04-07",
+    "name": "蛋白質維他命C白藜蘆醇 助新冠復元",
+    "url": "https://hskgene.com/blogs/probiofirst/covid_recovery",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-04-07",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/cognitive-ability",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-03-31",
+    "name": "染疫後遺長新冠 [HN019] 益生菌恢復健康",
+    "url": "https://hskgene.com/blogs/probiofirst/long_covid",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-03-24",
+    "name": "蜂蜜保腸道健康 鎮咳抗炎助復元",
+    "url": "https://hskgene.com/blogs/probiofirst/honey",
+    "cats": [
+      "健康食材",
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2022-03-17",
+    "name": "茯苓有益腸道菌 健脾抗炎祛痰濕",
+    "url": "https://hskgene.com/blogs/probiofirst/poria_2",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-03-17",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/chinese-medicine",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-03-10",
+    "name": "打3針增強免疫 「HN019」益生菌添助力",
+    "url": "https://hskgene.com/blogs/probiofirst/3rd-vaccination",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-03-03",
+    "name": "[K12] 口腔益生菌抗疫 減低呼吸道感染",
+    "url": "https://hskgene.com/blogs/probiofirst/k12_respiratoryhealth",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-02-24",
+    "name": "蒜頭是寶益腸道 軟化血管降血壓",
+    "url": "https://hskgene.com/blogs/probiofirst/garlic",
+    "cats": [
+      "健康食材",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-02-24",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/gut-health",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "健康瘦身",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2022-02-17",
+    "name": "「Lpc-37」益生菌紓壓助眠 身心健康齊抗疫",
+    "url": "https://hskgene.com/blogs/probiofirst/sleep_quality",
+    "cats": []
+  },
+  {
+    "date": "2022-02-10",
+    "name": "情人節享朱古力 促成愛情賀爾蒙",
+    "url": "https://hskgene.com/blogs/probiofirst/chocolate_for_valentine",
+    "cats": []
+  },
+  {
+    "date": "2022-02-10",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/infants",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2022-02-10",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/chocolate",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "健康瘦身",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2022-02-03",
+    "name": "恭喜您識飲識食 祝賀您健康過年",
+    "url": "https://hskgene.com/blogs/probiofirst/festival_weight_gain",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2022-02-03",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/health-tips",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "健康瘦身",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2022-02-03",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/calories",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "健康瘦身",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2022-01-27",
+    "name": "家㕑美味年夜飯 營養確保真健康",
+    "url": "https://hskgene.com/blogs/probiofirst/reunion_dinner",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2022-01-27",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/festival",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2022-01-20",
+    "name": "益生菌助情緒行為發展 保孩子健康快樂",
+    "url": "https://hskgene.com/blogs/probiofirst/ps128_kids",
+    "cats": []
+  },
+  {
+    "date": "2022-01-20",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/stress",
+    "cats": [
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2022-01-13",
+    "name": "間歇斷食可減肥 健康飲食需配合",
+    "url": "https://hskgene.com/blogs/probiofirst/fast-diet",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2022-01-06",
+    "name": "益生元配益生菌 共生質保健最佳",
+    "url": "https://hskgene.com/blogs/probiofirst/prebiotics_and_probiotics",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2022-01-06",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/prebiotics",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "健康瘦身",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2021-12-30",
+    "name": "LPC-37:副乾酪乳桿菌 紓壓護腦減焦慮",
+    "url": "https://hskgene.com/blogs/probiofirst/brain_and_probiotics",
+    "cats": []
+  },
+  {
+    "date": "2021-12-23",
+    "name": "節日享豐富大餐 蔬果纖維保健康",
+    "url": "https://hskgene.com/blogs/probiofirst/christmas-meal",
+    "cats": [
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2021-12-23",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/dietary-fiber",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "健康瘦身",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2021-12-16",
+    "name": "益生菌調理腸道 有助治療自閉症",
+    "url": "https://hskgene.com/blogs/probiofirst/probiotics_and_autism",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2021-12-09",
+    "name": "益生菌促進益菌 適當補充保健康",
+    "url": "https://hskgene.com/blogs/probiofirst/beneficial_bacteria",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2021-12-03",
+    "name": "自閉症腸道相關 微生態有助改善",
+    "url": "https://hskgene.com/blogs/probiofirst/autism",
+    "cats": [
+      "益生新知",
+      "睡眠情緒",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-11-25",
+    "name": "健康軟餐齊推廣 營養益菌同提供",
+    "url": "https://hskgene.com/blogs/probiofirst/pureed-diet",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2021-11-18",
+    "name": "睡眠窒息莫忽視 血氧量度助監測",
+    "url": "https://hskgene.com/blogs/probiofirst/sleep-apnea",
+    "cats": [
+      "睡眠情緒",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-11-18",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/elderly-health",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "健康瘦身",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2021-11-11",
+    "name": "西洋菜當時得令 富營養超級食物",
+    "url": "https://hskgene.com/blogs/probiofirst/watercress",
+    "cats": [
+      "健康食材",
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2021-11-11",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/super-food",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2021-11-04",
+    "name": "益生菌健康腸道 調控血糖又抗炎",
+    "url": "https://hskgene.com/blogs/probiofirst/bloodsugar",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-10-28",
+    "name": "吞嚥困難不用怕 精緻軟餐普及化",
+    "url": "https://hskgene.com/blogs/probiofirst/softmeal",
+    "cats": [
+      "飲食健康",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-10-21",
+    "name": "健康腸道利免疫 秋冬護肺防感染",
+    "url": "https://hskgene.com/blogs/probiofirst/autumn_respiration",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-10-15",
+    "name": "花旗蔘佐腸道菌 守護腸道益身心",
+    "url": "https://hskgene.com/blogs/probiofirst/american-ginseng",
+    "cats": [
+      "益生新知",
+      "健康食材"
+    ]
+  },
+  {
+    "date": "2021-10-15",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/cancer",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-10-07",
+    "name": "益生元聚葡萄糖 富口感益菌健腸",
+    "url": "https://hskgene.com/blogs/probiofirst/polydextrose",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2021-10-07",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/polydextrose",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2021-09-23",
+    "name": "益生菌株好獨特 臨床測試為標準",
+    "url": "https://hskgene.com/blogs/probiofirst/rct-probiotics",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2021-09-16",
+    "name": "中秋水果營養高 識食人月兩團圓",
+    "url": "https://hskgene.com/blogs/probiofirst/mid-autumn-festival-2021",
+    "cats": [
+      "健康食材",
+      "飲食健康",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2021-09-16",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/antioxidant",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2021-09-09",
+    "name": "茯苓乃菇菌菌核 修復癌腸道損傷",
+    "url": "https://hskgene.com/blogs/probiofirst/poria",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-09-09",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/mushrooms",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-09-02",
+    "name": "五穀纖維低升糖 卻病抗炎真健康",
+    "url": "https://hskgene.com/blogs/probiofirst/carbohydrate_inflammation",
+    "cats": [
+      "健康食材",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-08-26",
+    "name": "吃得好時睡得好 健康學習新學年",
+    "url": "https://hskgene.com/blogs/probiofirst/schoolday2021",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2021-08-26",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/learning",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2021-08-26",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/kids",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2021-08-26",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/parenting",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-08-26",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/vitamin",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-08-19",
+    "name": "植物肉當時得令 食得健康又環保",
+    "url": "https://hskgene.com/blogs/probiofirst/plant-based-meat",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2021-08-19",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/vegetarian",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "運動生活",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-08-12",
+    "name": "食用代糖甜味劑 腸道健康需關顧",
+    "url": "https://hskgene.com/blogs/probiofirst/sweetener_gut_health",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2021-08-12",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/artificial-sweetener",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2021-08-05",
+    "name": "運動益菌互配合 腸道整體齊健康",
+    "url": "https://hskgene.com/blogs/probiofirst/sport_gut-health",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2021-08-05",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/exercise",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2021-07-29",
+    "name": "腸道大腦互影響 行為健康同維持",
+    "url": "https://hskgene.com/blogs/probiofirst/gut-brain-axis-behavior",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2021-07-22",
+    "name": "飲食均衡兼有序 升糖指數減顧忌",
+    "url": "https://hskgene.com/blogs/probiofirst/glycemic_index",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-07-15",
+    "name": "大豆蛋白配益菌 運動增肌保健康",
+    "url": "https://hskgene.com/blogs/probiofirst/soyprotein_exercise",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "運動生活",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2021-07-15",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/muscle-hypertrophy",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "運動生活",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2021-07-15",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/protein-supplement",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-07-08",
+    "name": "各「色」其適椰菜花 營養均衡助益菌",
+    "url": "https://hskgene.com/blogs/probiofirst/cauliflower_nutrition",
+    "cats": [
+      "益生新知",
+      "健康食材"
+    ]
+  },
+  {
+    "date": "2021-07-01",
+    "name": "要減重飲食定時 保健康早餐必需",
+    "url": "https://hskgene.com/blogs/probiofirst/healthy_breakfast",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-07-01",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/overweight",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-06-24",
+    "name": "宵夜影響生理鐘 腸道菌亦受牽連",
+    "url": "https://hskgene.com/blogs/probiofirst/late_night_snack_gut_microbiome",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2021-06-17",
+    "name": "晉升父親大轉變 身心發展助育兒",
+    "url": "https://hskgene.com/blogs/probiofirst/fathersday_2021",
+    "cats": [
+      "營養補充",
+      "睡眠情緒",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2021-06-10",
+    "name": "小青柑伴健康糭 減緩升糖助消化",
+    "url": "https://hskgene.com/blogs/probiofirst/dumplings_2021",
+    "cats": [
+      "健康食材",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2021-06-10",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/tea",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "睡眠情緒",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2021-06-03",
+    "name": "O-3 O-6脂肪酸 比例均衡保健康",
+    "url": "https://hskgene.com/blogs/probiofirst/omega3_omega6",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2021-05-27",
+    "name": "西蘭花營養抗癌 腸道菌身體得益",
+    "url": "https://hskgene.com/blogs/probiofirst/broccoli_superfood",
+    "cats": [
+      "益生新知",
+      "健康食材"
+    ]
+  },
+  {
+    "date": "2021-05-20",
+    "name": "溶菌酶先清壞菌 益生菌加護牙齦",
+    "url": "https://hskgene.com/blogs/probiofirst/oral_teeth_care",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-05-20",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/oral-health",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-05-20",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/carious-tooth",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-05-13",
+    "name": "腸菌失衡脂肪肝 益生菌恢復健康",
+    "url": "https://hskgene.com/blogs/probiofirst/fattyliver",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-05-06",
+    "name": "懷孕産嬰傻三年？ 身心康健須保養",
+    "url": "https://hskgene.com/blogs/probiofirst/mothersday_pregnant",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2021-04-29",
+    "name": "羽衣甘藍益處多 基因決定苦不苦",
+    "url": "https://hskgene.com/blogs/probiofirst/kale_superfood",
+    "cats": [
+      "健康食材"
+    ]
+  },
+  {
+    "date": "2021-04-22",
+    "name": "益生菌雙歧桿菌 買時要揀好菌株",
+    "url": "https://hskgene.com/blogs/probiofirst/bifidobacteria",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "運動生活",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-04-15",
+    "name": "溫書考試好用功 食得健康就輕鬆",
+    "url": "https://hskgene.com/blogs/probiofirst/dse_exam_stress",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2021-04-08",
+    "name": "NMN保細胞活力 能改善老化疾病",
+    "url": "https://hskgene.com/blogs/probiofirst/nmn_antiaging",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-03-25",
+    "name": "食蛋健康營養高 處理存放須留神",
+    "url": "https://hskgene.com/blogs/probiofirst/egg",
+    "cats": [
+      "益生新知",
+      "健康食材"
+    ]
+  },
+  {
+    "date": "2021-03-18",
+    "name": "益菌短鏈脂肪酸 整腸抗炎又補腦",
+    "url": "https://hskgene.com/blogs/probiofirst/short-chain-fatty-acid",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-03-11",
+    "name": "白藜蘆醇抗氧化 更促進腸道健康",
+    "url": "https://hskgene.com/blogs/probiofirst/resveratrol_benefits",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-03-04",
+    "name": "朱古力美味健康 減中風改善血壓",
+    "url": "https://hskgene.com/blogs/probiofirst/dark_chocolate_healthy",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-02-25",
+    "name": "NMN與白藜蘆醇 青春常駐好拍檔",
+    "url": "https://hskgene.com/blogs/probiofirst/nmn_trans_resveratrol",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-02-18",
+    "name": "代代也同「糖」 攝取要適量",
+    "url": "https://hskgene.com/blogs/probiofirst/sugar_sweetener",
+    "cats": [
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2021-02-04",
+    "name": "新春飲食顧健康 開開心心渡「肥」年",
+    "url": "https://hskgene.com/blogs/probiofirst/cny_transfat",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2021-01-28",
+    "name": "脂質體來包一包 健康傳送能靠它",
+    "url": "https://hskgene.com/blogs/probiofirst/liposomal",
+    "cats": [
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-01-21",
+    "name": "膳食纖維種類多 腸道菌最佳拍檔",
+    "url": "https://hskgene.com/blogs/probiofirst/dietaryfiber_microbiome",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2021-01-14",
+    "name": "以菌制菌：環境益生菌",
+    "url": "https://hskgene.com/blogs/probiofirst/environmentalprobiotics",
+    "cats": [
+      "益生新知",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2021-01-14",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/allergy",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2021-01-07",
+    "name": "疫苗固然好重要 防疫措施莫鬆懈",
+    "url": "https://hskgene.com/blogs/probiofirst/covid_vaccine",
+    "cats": [
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-12-17",
+    "name": "益腸道紅酒多酚 去酒精紅酒更佳",
+    "url": "https://hskgene.com/blogs/probiofirst/redwine",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-12-10",
+    "name": "留家抗疫 食點零食",
+    "url": "https://hskgene.com/blogs/probiofirst/snacks_nuts",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2020-12-10",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/nuts",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2020-12-03",
+    "name": "細菌和基因裁縫的剪刀 (2020年諾貝爾獎專題文章)",
+    "url": "https://hskgene.com/blogs/probiofirst/nobel_prize_2020_crispr",
+    "cats": [
+      "益生新知",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2020-12-03",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/nobel-prize",
+    "cats": [
+      "益生新知",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2020-11-26",
+    "name": "口腔腸道益菌 預防改善秋冬呼吸道疾病",
+    "url": "https://hskgene.com/blogs/probiofirst/winter_health",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-11-19",
+    "name": "感恩地球 禽肉較環保健康",
+    "url": "https://hskgene.com/blogs/probiofirst/thanksgiving_poultry",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-11-12",
+    "name": "輪班工作 食無定時損腸道",
+    "url": "https://hskgene.com/blogs/probiofirst/shift_workers",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-11-05",
+    "name": "滴雞精Ｘ大豆蛋白 秋冬強身升腦力",
+    "url": "https://hskgene.com/blogs/probiofirst/protein_chicken_essence",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2020-10-29",
+    "name": "「素」·「營」為先 (二)：脂溶維他命Ｄ＋Ｋ 有助鈣平衡",
+    "url": "https://hskgene.com/blogs/probiofirst/vegetarian_nutrition_2",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-10-22",
+    "name": "「素」·「營」為先(一) : 纖維丶蛋白質丶維他命B12",
+    "url": "https://hskgene.com/blogs/probiofirst/vegetarian_nutrition_1",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-10-15",
+    "name": "益菌健口：口腔健康新方法",
+    "url": "https://hskgene.com/blogs/probiofirst/oral_health_hn019",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-10-08",
+    "name": "益生菌＋黑朱古力：雙劍合璧 提升免疫",
+    "url": "https://hskgene.com/blogs/probiofirst/probiotics_cocoa_immunity",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-09-24",
+    "name": "多色茶食伴中秋 健康滋味同兼收",
+    "url": "https://hskgene.com/blogs/probiofirst/tea_mid_autumn",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2020-09-18",
+    "name": "「超級穀物」真面目",
+    "url": "https://hskgene.com/blogs/probiofirst/quinoa_buckwheat_foxtailmillet",
+    "cats": [
+      "健康食材",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-09-10",
+    "name": "食「籽」大動：奇亞籽和莧菜籽",
+    "url": "https://hskgene.com/blogs/probiofirst/chiaseeds_amaranth",
+    "cats": [
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2020-09-03",
+    "name": "健康食物。充足睡眠：「醒」「目」開學",
+    "url": "https://hskgene.com/blogs/probiofirst/eye_brain_school",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2020-08-27",
+    "name": "百搭鷹嘴豆 腸道血糖好幫手",
+    "url": "https://hskgene.com/blogs/probiofirst/chickpea_gut_bloodglucose",
+    "cats": [
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-08-20",
+    "name": "「口」「體」之養：口腔。免疫。心血管",
+    "url": "https://hskgene.com/blogs/probiofirst/oral_immune_cardio",
+    "cats": [
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-08-13",
+    "name": "菇菌精華：強免疫 抗感染",
+    "url": "https://hskgene.com/blogs/probiofirst/mushroom_extracts",
+    "cats": [
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-08-06",
+    "name": "「口」「腹」之累：口腔菌與腸道菌",
+    "url": "https://hskgene.com/blogs/probiofirst/oral_gut_health",
+    "cats": [
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2020-07-30",
+    "name": "炎夏抗疫 買餸攻略",
+    "url": "https://hskgene.com/blogs/probiofirst/pandemic_shopping_guide",
+    "cats": [
+      "飲食健康",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-07-23",
+    "name": "病從口入：口腔菌與呼吸道",
+    "url": "https://hskgene.com/blogs/probiofirst/oral_microbiome_respiratory",
+    "cats": [
+      "飲食健康",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-07-16",
+    "name": "睡眠窒息。血氧監測與健康",
+    "url": "https://hskgene.com/blogs/probiofirst/obstructive_sleep_apnea",
+    "cats": [
+      "睡眠情緒",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-07-09",
+    "name": "「口罩味」口臭 又是細菌作怪？",
+    "url": "https://hskgene.com/blogs/probiofirst/bad_breath",
+    "cats": [
+      "營養補充",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2020-07-02",
+    "name": "飯。序",
+    "url": "https://hskgene.com/blogs/probiofirst/meal_sequence",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-06-25",
+    "name": "食粽配三寶 腸胃一定好",
+    "url": "https://hskgene.com/blogs/probiofirst/rice-dumpling-2020",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2020-06-18",
+    "name": "阿爸潤腸補鈣 從父親節開始",
+    "url": "https://hskgene.com/blogs/probiofirst/fathers_day_gutandcalcium",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2020-06-18",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/constipation",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "運動生活",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2020-06-11",
+    "name": "滴雞精的前世今生",
+    "url": "https://hskgene.com/blogs/probiofirst/chicken_essence",
+    "cats": [
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2020-06-04",
+    "name": "藏在口罩下的「它」",
+    "url": "https://hskgene.com/blogs/probiofirst/skin_gut_pimples",
+    "cats": [
+      "睡眠情緒",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2020-06-04",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/skin",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-05-28",
+    "name": "呼吸道健康與腸道菌息息相關",
+    "url": "https://hskgene.com/blogs/probiofirst/gut_lung_axis",
+    "cats": [
+      "睡眠情緒",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-05-21",
+    "name": "室內空氣污染物大檢閱",
+    "url": "https://hskgene.com/blogs/probiofirst/air_quality_monitor",
+    "cats": [
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2020-05-14",
+    "name": "健康秋葵 益腸補鈣",
+    "url": "https://hskgene.com/blogs/probiofirst/okra",
+    "cats": [
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2020-05-07",
+    "name": "體貼母親的健康美味",
+    "url": "https://hskgene.com/blogs/probiofirst/mothers_day_sesame",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2020-04-23",
+    "name": "新冠病毒：感染、抗體和測試",
+    "url": "https://hskgene.com/blogs/probiofirst/covid19_infection_antibody_testing",
+    "cats": [
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-04-16",
+    "name": "洋蔥抗菌 益腸抗氧化",
+    "url": "https://hskgene.com/blogs/probiofirst/onion_nutrition",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-04-02",
+    "name": "認識新冠肺炎分子檢測",
+    "url": "https://hskgene.com/blogs/probiofirst/covid19_antibody_test",
+    "cats": [
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-03-26",
+    "name": "益腸大蒜 抗炎抗菌強免疫",
+    "url": "https://hskgene.com/blogs/probiofirst/garlic_nutrition",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-03-19",
+    "name": "臭氧。紫外綫。光觸媒",
+    "url": "https://hskgene.com/blogs/probiofirst/ozone_uvc_photocatalyst_disinfection",
+    "cats": [
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-03-12",
+    "name": "維他命Ｃ知多少",
+    "url": "https://hskgene.com/blogs/probiofirst/vitamin-c",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-03-05",
+    "name": "勤潔手 護手有法",
+    "url": "https://hskgene.com/blogs/probiofirst/hand_sanitizer_disinfectant_gloves",
+    "cats": [
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-02-27",
+    "name": "奇異果 強身利腸好幫手",
+    "url": "https://hskgene.com/blogs/probiofirst/kiwifruit",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-02-13",
+    "name": "防疫物資大檢閱",
+    "url": "https://hskgene.com/blogs/probiofirst/epidemic_prevention_supplies",
+    "cats": [
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-02-13",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/influenza",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2020-02-13",
+    "name": "口罩下的愛",
+    "url": "https://hskgene.com/blogs/probiofirst/love_under_mask",
+    "cats": [
+      "益生新知",
+      "睡眠情緒",
+      "運動生活",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2020-02-06",
+    "name": "識飲識食 護肺防疫",
+    "url": "https://hskgene.com/blogs/probiofirst/healthy-diet-better-lung",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-01-30",
+    "name": "維持免疫 同心抗疫",
+    "url": "https://hskgene.com/blogs/probiofirst/fight-against-flu-tgt",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-01-23",
+    "name": "橙橙轆轆🍊金銀滿屋",
+    "url": "https://hskgene.com/blogs/probiofirst/orange-newyear",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2020-01-16",
+    "name": "抗病防疫 需内外兼備",
+    "url": "https://hskgene.com/blogs/probiofirst/prevent-flu",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2020-01-09",
+    "name": "老薑何以謂寶？原因不止一個！",
+    "url": "https://hskgene.com/blogs/probiofirst/ginger-benefits",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2020-01-02",
+    "name": "佳節相聚與腸道菌",
+    "url": "https://hskgene.com/blogs/probiofirst/family-festival-gutmicrobiome",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "睡眠情緒",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2019-12-26",
+    "name": "港人的增重節日",
+    "url": "https://hskgene.com/blogs/probiofirst/festival-weightgain",
+    "cats": [
+      "飲食健康",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2019-12-19",
+    "name": "聖誕節的神級食物",
+    "url": "https://hskgene.com/blogs/probiofirst/christmas-cocoa",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2019-12-12",
+    "name": "有益身心的黑朱古力",
+    "url": "https://hskgene.com/blogs/probiofirst/darkchocolate-benefits",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "睡眠情緒",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-12-05",
+    "name": "運動有益腸道健康",
+    "url": "https://hskgene.com/blogs/probiofirst/sports-guthealth",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2019-11-28",
+    "name": "菇菌菌核很有益",
+    "url": "https://hskgene.com/blogs/probiofirst/sclerotia-benefits",
+    "cats": [
+      "健康食材",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-11-21",
+    "name": "飼養狗狗可延壽？",
+    "url": "https://hskgene.com/blogs/probiofirst/dogs-longevity",
+    "cats": [
+      "睡眠情緒",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2019-11-21",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/pets",
+    "cats": [
+      "睡眠情緒",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2019-11-14",
+    "name": "食物過敏。敏感。不耐",
+    "url": "https://hskgene.com/blogs/probiofirst/food-allergy",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-11-07",
+    "name": "紅肉去與留",
+    "url": "https://hskgene.com/blogs/probiofirst/red-meat",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-10-31",
+    "name": "你的腸道幾多歲？",
+    "url": "https://hskgene.com/blogs/probiofirst/gut-age",
+    "cats": [
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2019-10-24",
+    "name": "秋日養生好食物",
+    "url": "https://hskgene.com/blogs/probiofirst/autumn-good-food",
+    "cats": [
+      "益生新知",
+      "健康食材"
+    ]
+  },
+  {
+    "date": "2019-10-17",
+    "name": "健脾止瀉的女性恩物",
+    "url": "https://hskgene.com/blogs/probiofirst/lotus_seeds",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2019-10-10",
+    "name": "沾塵食土身體好？",
+    "url": "https://hskgene.com/blogs/probiofirst/eatingdirt",
+    "cats": [
+      "益生新知",
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-10-10",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/world-news",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "健康瘦身",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2019-10-03",
+    "name": "重陽節的最佳禮物",
+    "url": "https://hskgene.com/blogs/probiofirst/doubleninth_festival",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2019-10-03",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/recipe",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2019-09-26",
+    "name": "消毒藥水含菌",
+    "url": "https://hskgene.com/blogs/probiofirst/antiseptic",
+    "cats": [
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-09-26",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/myths",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-09-19",
+    "name": "菇菌有益：猴頭菇護胃",
+    "url": "https://hskgene.com/blogs/probiofirst/mushroom_benefits",
+    "cats": [
+      "飲食健康",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-09-19",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/defecation",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-09-12",
+    "name": "中秋飲清茶：消滯養菌又安神",
+    "url": "https://hskgene.com/blogs/probiofirst/mooncaketea",
+    "cats": [
+      "益生新知",
+      "睡眠情緒",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2019-09-05",
+    "name": "我們鞋上都有糞便",
+    "url": "https://hskgene.com/blogs/probiofirst/godirty",
+    "cats": [
+      "益生新知",
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-08-29",
+    "name": "醒目開學從健康早餐開始",
+    "url": "https://hskgene.com/blogs/probiofirst/schoolday2019",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2019-08-22",
+    "name": "中西合壁 大黄丹皮湯治炎",
+    "url": "https://hskgene.com/blogs/probiofirst/cwmedcrossover",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-08-15",
+    "name": "一方水土養一方菌",
+    "url": "https://hskgene.com/blogs/probiofirst/microbiome_geography",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2019-08-08",
+    "name": "藥效不同，腸道菌作怪？",
+    "url": "https://hskgene.com/blogs/probiofirst/drug",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2019-08-01",
+    "name": "期待你的出生：後孕篇",
+    "url": "https://hskgene.com/blogs/probiofirst/pregnancy_third_trimester",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2019-08-01",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/pregnancy",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-07-25",
+    "name": "癡肥的遺傳（二）",
+    "url": "https://hskgene.com/blogs/probiofirst/obesinher",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-07-18",
+    "name": "大熱的冰凍甜飲",
+    "url": "https://hskgene.com/blogs/probiofirst/summerdrink",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2019-07-11",
+    "name": "低碳減肥之迷思",
+    "url": "https://hskgene.com/blogs/probiofirst/lowcarbs",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2019-07-04",
+    "name": "癡肥的遺傳（一）",
+    "url": "https://hskgene.com/blogs/probiofirst/epigenetics_obesity",
+    "cats": [
+      "飲食健康",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-06-27",
+    "name": "糞菌移植就能瘦？",
+    "url": "https://hskgene.com/blogs/probiofirst/fecal_transplant",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-06-20",
+    "name": "和你一起長大：中孕篇",
+    "url": "https://hskgene.com/blogs/probiofirst/pregnancy_second_trimester",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-06-13",
+    "name": "沉默的男人，打開心扉防脫髮",
+    "url": "https://hskgene.com/blogs/probiofirst/stress_hair_loss",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "睡眠情緒",
+      "疾病防治",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2019-05-30",
+    "name": "「粽」是要淺嘗",
+    "url": "https://hskgene.com/blogs/probiofirst/rice-dumpling",
+    "cats": [
+      "飲食健康",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2019-05-23",
+    "name": "益生菌能治不育？",
+    "url": "https://hskgene.com/blogs/probiofirst/infertility_sperm",
+    "cats": [
+      "益生新知",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-05-16",
+    "name": "『腸道友善』的發酵食物",
+    "url": "https://hskgene.com/blogs/probiofirst/fermented_food",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-05-09",
+    "name": "孩子的最強後盾",
+    "url": "https://hskgene.com/blogs/probiofirst/mothers_day",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2019-05-03",
+    "name": "咖啡與你 （二）(足本版）",
+    "url": "https://hskgene.com/blogs/probiofirst/coffee2",
+    "cats": [
+      "健康食材",
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2019-05-03",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/coffee",
+    "cats": [
+      "健康食材",
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2019-04-25",
+    "name": "肥胖。抑鬱。腸道細菌",
+    "url": "https://hskgene.com/blogs/probiofirst/obesity_depression",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "睡眠情緒",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2019-04-11",
+    "name": "聰明菌",
+    "url": "https://hskgene.com/blogs/probiofirst/cognitive_learning",
+    "cats": [
+      "益生新知",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2019-03-28",
+    "name": "咖啡與你（一）",
+    "url": "https://hskgene.com/blogs/probiofirst/coffee",
+    "cats": [
+      "健康食材",
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2019-03-21",
+    "name": "瞓唔夠？好菌少！睡眠與肥胖的關係",
+    "url": "https://hskgene.com/blogs/probiofirst/sleep_obesity",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2019-03-14",
+    "name": "咀嚼活腦 考試輕鬆無壓力",
+    "url": "https://hskgene.com/blogs/probiofirst/examstress",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2019-03-07",
+    "name": "朱古力的五個迷思",
+    "url": "https://hskgene.com/blogs/probiofirst/chocolate",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-02-28",
+    "name": "要減肥，先抗「炎」",
+    "url": "https://hskgene.com/blogs/probiofirst/chronic_inflammation",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "健康瘦身",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-02-21",
+    "name": "人參抗腸癌，還需腸道菌",
+    "url": "https://hskgene.com/blogs/probiofirst/ginseng_anti_cancer",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-02-14",
+    "name": "胃裏有蝴蝶？",
+    "url": "https://hskgene.com/blogs/probiofirst/valentines_day_butterfly",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2019-01-31",
+    "name": "豬年食菠蘿 益菌多籮籮（足本版）",
+    "url": "https://hskgene.com/blogs/probiofirst/pineapple_and_health",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "健康瘦身",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2019-01-24",
+    "name": "兒童濕疹與食物過敏",
+    "url": "https://hskgene.com/blogs/probiofirst/probiotics_eczema_2",
+    "cats": [
+      "益生新知",
+      "睡眠情緒",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-01-24",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/eczema",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-01-17",
+    "name": "選擇益生菌-由菌株入手",
+    "url": "https://hskgene.com/blogs/probiofirst/probiotics_strain",
+    "cats": [
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2019-01-17",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/shopping-guide",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2019-01-10",
+    "name": "大腸桿菌，焉知正邪？認識菌株",
+    "url": "https://hskgene.com/blogs/probiofirst/bacteria_strain",
+    "cats": [
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2019-01-03",
+    "name": "山核桃的5大益處",
+    "url": "https://hskgene.com/blogs/probiofirst/pecans",
+    "cats": [
+      "健康食材",
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2018-12-27",
+    "name": "聖誕大魚大肉，食多左會點？",
+    "url": "https://hskgene.com/blogs/probiofirst/overeating_during_festival",
+    "cats": [
+      "飲食健康",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2018-12-20",
+    "name": "健康的節日飲食2",
+    "url": "https://hskgene.com/blogs/probiofirst/christmas_eat_healthy_ii",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2018-12-13",
+    "name": "菇菌多醣︰優良的益生元",
+    "url": "https://hskgene.com/blogs/probiofirst/mushroom_as_prebiotics",
+    "cats": [
+      "飲食健康",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-12-06",
+    "name": "酒能傷身，亦能壞口",
+    "url": "https://hskgene.com/blogs/probiofirst/alcohol_mouth_bacteria",
+    "cats": [
+      "飲食健康",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-12-06",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/alcohol",
+    "cats": [
+      "飲食健康",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-11-29",
+    "name": "[2018年諾貝爾] 腸道微生物影響癌症免疫治療",
+    "url": "https://hskgene.com/blogs/probiofirst/nobel_prize_gut_microbiome_cancer",
+    "cats": [
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-11-22",
+    "name": "凝結芽孢桿菌/芽孢乳酸菌(BC30)- 提昇蛋白質吸收和運用",
+    "url": "https://hskgene.com/blogs/probiofirst/bc30_muscle_repair",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2018-11-15",
+    "name": "小小改變，選擇健康食物",
+    "url": "https://hskgene.com/blogs/probiofirst/daily_healthy_tips",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-11-08",
+    "name": "抗菌新世代",
+    "url": "https://hskgene.com/blogs/probiofirst/inhibitory_effect_on_pathogens",
+    "cats": [
+      "益生新知",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-11-01",
+    "name": "優質的蛋白質",
+    "url": "https://hskgene.com/blogs/probiofirst/protein_quality",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2018-10-25",
+    "name": "中草藥調節腸道菌——淮山",
+    "url": "https://hskgene.com/blogs/probiofirst/tcm_chinese_yam",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-10-18",
+    "name": "益生菌和濕疹",
+    "url": "https://hskgene.com/blogs/probiofirst/probiotics_eczema",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-10-11",
+    "name": "酒不醉人人自醉",
+    "url": "https://hskgene.com/blogs/probiofirst/alcohol_adhd",
+    "cats": [
+      "飲食健康",
+      "睡眠情緒",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-10-04",
+    "name": "腸道菌能幫助中藥吸收 亦能減低藥性",
+    "url": "https://hskgene.com/blogs/probiofirst/tcm_bi-direction",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-09-27",
+    "name": "腸道微生物助中藥吸收",
+    "url": "https://hskgene.com/blogs/probiofirst/tcm",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-09-20",
+    "name": "選擇月餅︰健康攻略",
+    "url": "https://hskgene.com/blogs/probiofirst/mooncake",
+    "cats": [
+      "飲食健康",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2018-09-13",
+    "name": "腸道健康, 皮膚美麗",
+    "url": "https://hskgene.com/blogs/probiofirst/gut_skin",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-09-06",
+    "name": "知道你來的時候：初孕篇",
+    "url": "https://hskgene.com/blogs/probiofirst/pregnancy_first_trimester",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2018-08-30",
+    "name": "高效能學習者",
+    "url": "https://hskgene.com/blogs/probiofirst/learning_efficiency",
+    "cats": [
+      "飲食健康",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2018-08-23",
+    "name": "大學生健康飲食貼士",
+    "url": "https://hskgene.com/blogs/probiofirst/uni_diet_tips",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2018-08-16",
+    "name": "啤酒都可以飲得健康?",
+    "url": "https://hskgene.com/blogs/probiofirst/beer",
+    "cats": [
+      "益生新知",
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2018-08-09",
+    "name": "食物安全︰隱形的敵人！如何避免食物致病",
+    "url": "https://hskgene.com/blogs/probiofirst/food_safety",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-08-02",
+    "name": "體重控制「PEAS」小貼士",
+    "url": "https://hskgene.com/blogs/probiofirst/weight_management_peas",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "運動生活",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2018-07-26",
+    "name": "什麼是HMO奶粉？HMO的作用",
+    "url": "https://hskgene.com/blogs/probiofirst/hmo_formula",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2018-07-19",
+    "name": "自我檢視「腸易激」",
+    "url": "https://hskgene.com/blogs/probiofirst/ibs_self_check",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-07-12",
+    "name": "益「新」菌，癌症新知",
+    "url": "https://hskgene.com/blogs/probiofirst/cancer_2",
+    "cats": [
+      "益生新知",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-07-05",
+    "name": "乳酪選擇6要點！香港市售乳酪分析",
+    "url": "https://hskgene.com/blogs/probiofirst/choosing_yogurt_tips_n_analysis",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2018-06-28",
+    "name": "夏日飲得健康",
+    "url": "https://hskgene.com/blogs/probiofirst/drink_healthy",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2018-06-21",
+    "name": "端午節後積食怎麼辦?",
+    "url": "https://hskgene.com/blogs/probiofirst/sticky_rice_dumpling",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2018-06-14",
+    "name": "爸爸們的腸道健康飲食",
+    "url": "https://hskgene.com/blogs/probiofirst/fathers_day_diet_habit",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2018-06-07",
+    "name": "營養補充劑的迷思",
+    "url": "https://hskgene.com/blogs/probiofirst/supplement-or-not",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-05-31",
+    "name": "教你點揀—益生菌補充劑",
+    "url": "https://hskgene.com/blogs/probiofirst/choosing_probiotics",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-05-24",
+    "name": "健康腸道菌 舒緩「腸易激」(二)",
+    "url": "https://hskgene.com/blogs/probiofirst/irritable-bowel-syndrome-2",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-05-17",
+    "name": "「佛系」植物蛋白",
+    "url": "https://hskgene.com/blogs/probiofirst/veg_protein",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2018-05-10",
+    "name": "一個母親節，滿足天下媽媽3個願望",
+    "url": "https://hskgene.com/blogs/probiofirst/mothers_day_healthy_gift",
+    "cats": [
+      "益生新知",
+      "健康食材",
+      "營養補充",
+      "睡眠情緒",
+      "健康瘦身",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2018-05-03",
+    "name": "老鼠愛上貓",
+    "url": "https://hskgene.com/blogs/probiofirst/toxoplasma_gondii",
+    "cats": [
+      "飲食健康",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-04-26",
+    "name": "便秘與腸道菌",
+    "url": "https://hskgene.com/blogs/probiofirst/constipation",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-04-26",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/diarrhea",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-04-19",
+    "name": "益生菌碰上高血壓",
+    "url": "https://hskgene.com/blogs/probiofirst/high_blood_pressure",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-04-12",
+    "name": "吃出幸福——血清素",
+    "url": "https://hskgene.com/blogs/probiofirst/serotonin",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-04-06",
+    "name": "健康腸道 長壽之道",
+    "url": "https://hskgene.com/blogs/probiofirst/longevity",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2018-03-22",
+    "name": "葡萄 - 聖經中的健康食品",
+    "url": "https://hskgene.com/blogs/probiofirst/grape",
+    "cats": [
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2018-03-15",
+    "name": "腸道菌與腸癌多面睇",
+    "url": "https://hskgene.com/blogs/probiofirst/colon-cancer",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-03-08",
+    "name": "調整腸道菌 備戰公開試",
+    "url": "https://hskgene.com/blogs/probiofirst/learning_memory",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2018-03-01",
+    "name": "時差影響腸道細菌",
+    "url": "https://hskgene.com/blogs/probiofirst/jet_lag",
+    "cats": [
+      "益生新知",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2018-02-22",
+    "name": "狗狗——小孩的最好朋友",
+    "url": "https://hskgene.com/blogs/probiofirst/kids-and-dogs",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2018-02-21",
+    "name": "五大抗流感食物",
+    "url": "https://hskgene.com/blogs/probiofirst/anti-flu-food",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-02-08",
+    "name": "新春飲食錦囊",
+    "url": "https://hskgene.com/blogs/probiofirst/cny_eat_healthy",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2018-02-01",
+    "name": "黑朱古力ｘ腸道菌 助健康快樂",
+    "url": "https://hskgene.com/blogs/probiofirst/chocolate_probiotics",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2018-01-25",
+    "name": "失落的益生菌",
+    "url": "https://hskgene.com/blogs/probiofirst/gut-deteriorate-over-generation",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2018-01-18",
+    "name": "哈扎狩獵者的腸道菌",
+    "url": "https://hskgene.com/blogs/probiofirst/hadza",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2018-01-11",
+    "name": "腸道菌代謝物 抵禦流感",
+    "url": "https://hskgene.com/blogs/probiofirst/against-flu-dat",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2018-01-04",
+    "name": "腸道菌與社交生活",
+    "url": "https://hskgene.com/blogs/probiofirst/gut-microbiome-and-sociability",
+    "cats": [
+      "益生新知",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2017-12-28",
+    "name": "年終健康大檢視",
+    "url": "https://hskgene.com/blogs/probiofirst/year-end-health-review",
+    "cats": [
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2017-12-21",
+    "name": "聖誕節 健康飲食計劃",
+    "url": "https://hskgene.com/blogs/probiofirst/christmas-eat-healthy",
+    "cats": [
+      "飲食健康",
+      "營養補充",
+      "節日飲食"
+    ]
+  },
+  {
+    "date": "2017-12-14",
+    "name": "抗癌益生菌:服用益生菌预防癌症?",
+    "url": "https://hskgene.com/blogs/probiofirst/cancer",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2017-12-07",
+    "name": "腸道細菌影響大腦功能。大腦與第二大腦對話",
+    "url": "https://hskgene.com/blogs/probiofirst/gut-brain-axis",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2017-11-30",
+    "name": "長者腸道健康的5大秘訣",
+    "url": "https://hskgene.com/blogs/probiofirst/colon-health-and-elderly",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2017-11-23",
+    "name": "增肌變增肥（足本版）",
+    "url": "https://hskgene.com/blogs/probiofirst/building-muscle-and-fat",
+    "cats": [
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2017-11-16",
+    "name": "每天大便＝腸道健康？（足本版）",
+    "url": "https://hskgene.com/blogs/probiofirst/daily-bowel-movement-and-health",
+    "cats": [
+      "益生新知",
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2017-11-10",
+    "name": "生理時鐘。腸道菌。 肥胖。 益生菌 (2017 諾貝爾獎專題文章)",
+    "url": "https://hskgene.com/blogs/probiofirst/body-clock-and-microbiome",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "睡眠情緒"
+    ]
+  },
+  {
+    "date": "2017-11-03",
+    "name": "減肥不吃肉？注意補充蛋白質！",
+    "url": "https://hskgene.com/blogs/probiofirst/meatless-protein-weight-loss",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2017-10-27",
+    "name": "腸道指數意料之外（足本版）",
+    "url": "https://hskgene.com/blogs/probiofirst/weight-loss-client-case",
+    "cats": [
+      "營養補充",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2017-10-20",
+    "name": "蛀牙、遺傳和環境因素（足本版）",
+    "url": "https://hskgene.com/blogs/probiofirst/tooth-decay-genetics",
+    "cats": [
+      "運動生活",
+      "疾病防治"
+    ]
+  },
+  {
+    "date": "2017-10-13",
+    "name": "抗生素出沒注意（足本版）",
+    "url": "https://hskgene.com/blogs/probiofirst/antibiotics-effects-on-microbiome",
+    "cats": []
+  },
+  {
+    "date": "2017-10-13",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/antibiotics",
+    "cats": []
+  },
+  {
+    "date": "2017-10-06",
+    "name": "人造甜味劑是健康的好友？（足本版）",
+    "url": "https://hskgene.com/blogs/probiofirst/artificial-sweetener-and-gut-bacteria",
+    "cats": [
+      "飲食健康"
+    ]
+  },
+  {
+    "date": "2017-09-29",
+    "name": "運動減肥的迷思（足本版）",
+    "url": "https://hskgene.com/blogs/probiofirst/mystery-of-exercise-and-weight-loss",
+    "cats": [
+      "飲食健康",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2017-09-05",
+    "name": "如何選擇益生菌？買前必看這6項",
+    "url": "https://hskgene.com/blogs/probiofirst/6-considerations-choosing-probiotics-supplement",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2017-09-05",
+    "name": "過你6招K.O.便秘！ 關教授講解如何緩解便秘",
+    "url": "https://hskgene.com/blogs/probiofirst/ko-constipation",
+    "cats": [
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2017-07-06",
+    "name": "口腔的微生物組",
+    "url": "https://hskgene.com/blogs/probiofirst/microbiome-mouth",
+    "cats": [
+      "益生新知",
+      "運動生活"
+    ]
+  },
+  {
+    "date": "2017-04-07",
+    "name": "健康腸道菌 紓緩「腸易激」",
+    "url": "https://hskgene.com/blogs/probiofirst/irritable-bowel-syndrome",
+    "cats": [
+      "益生新知",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2017-02-23",
+    "name": "補益生菌 食乳酪就得？",
+    "url": "https://hskgene.com/blogs/probiofirst/yoghurt-probiotics",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2017-02-23",
+    "name": "《益生第一關》",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/yogurt",
+    "cats": [
+      "益生新知",
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2017-01-12",
+    "name": "母乳也有菌",
+    "url": "https://hskgene.com/blogs/probiofirst/breastfeedbacteria",
+    "cats": [
+      "益生新知"
+    ]
+  },
+  {
+    "date": "2016-10-07",
+    "name": "節食減肥 愈減愈肥",
+    "url": "https://hskgene.com/blogs/probiofirst/slimming-diet-side-effects",
+    "cats": [
+      "飲食健康",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2016-09-02",
+    "name": "苗條美麗蛋白質",
+    "url": "https://hskgene.com/blogs/probiofirst/slimming-protein",
+    "cats": [
+      "營養補充",
+      "健康瘦身"
+    ]
+  },
+  {
+    "date": "2016-07-07",
+    "name": "第一口母乳",
+    "url": "https://hskgene.com/blogs/probiofirst/fristbreastfeed",
+    "cats": []
+  },
+  {
+    "date": "2016-04-14",
+    "name": "益生菌簡介",
+    "url": "https://hskgene.com/blogs/probiofirst/probiotics-introduction",
+    "cats": [
+      "益生新知",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2016-03-18",
+    "name": "益生菌？益生元？",
+    "url": "https://hskgene.com/blogs/probiofirst/probiotics-prebiotics",
+    "cats": [
+      "益生新知",
+      "營養補充"
+    ]
+  },
+  {
+    "date": "2016-03-04",
+    "name": "人類微生物組",
+    "url": "https://hskgene.com/blogs/probiofirst/human-body-microbiome",
+    "cats": [
+      "益生新知"
+    ]
+  },
+  {
+    "date": "",
+    "name": "",
+    "url": "https://hskgene.com/blogs/probiofirst/tagged/",
+    "cats": []
+  }
+]</script>
+
+  <script>
+  (function () {
+    const CATS = [
+      { key:'ALL',     label:'全部',     cls:'cat-ALL' },
+      { key:'益生新知', label:'益生新知', cls:'cat-益生新知' },
+      { key:'健康食材', label:'健康食材', cls:'cat-健康食材' },
+      { key:'飲食健康', label:'飲食健康', cls:'cat-飲食健康' },
+      { key:'營養補充', label:'營養補充', cls:'cat-營養補充' },
+      { key:'睡眠情緒', label:'睡眠情緒', cls:'cat-睡眠情緒' },
+      { key:'運動生活', label:'運動生活', cls:'cat-運動生活' },
+      { key:'健康瘦身', label:'健康瘦身', cls:'cat-健康瘦身' },
+      { key:'疾病防治', label:'疾病防治', cls:'cat-疾病防治' },
+      { key:'節日飲食', label:'節日飲食', cls:'cat-節日飲食' },
+    ];
+
+    const $catBar = document.getElementById('catBar');
+    const $count  = document.getElementById('count');
+    const $q      = document.getElementById('q');
+    const $list   = document.getElementById('list');
+    const $chip   = document.getElementById('activeChip');
+    const $backTop= document.getElementById('backTop');
+
+    let DATA = [], state = { cat:'ALL', q:'' };
+
+    async function loadData(){
+      const txt=(document.getElementById('INLINE_DATA')?.textContent||'').trim();
+      if(txt){ try{ DATA = JSON.parse(txt); return; } catch(e){} }
+      try{
+        const r = await fetch('data.json',{cache:'no-cache'});
+        if(r.ok){ DATA = await r.json(); return; }
+      }catch(e){}
+      DATA = [];
+    }
+
+    function renderCats(){
+      $catBar.innerHTML='';
+      CATS.forEach(c=>{
+        const btn = document.createElement('button');
+        btn.className = `cat-btn ${c.cls} ${state.cat===c.key?'active':''}`;
+        btn.textContent = c.label;
+        btn.onclick = ()=>{
+          state.cat = c.key;
+          document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+          btn.classList.add('active');
+          updateActiveChip();
+          renderList();
+        };
+        $catBar.appendChild(btn);
+      });
+      updateActiveChip();
+    }
+
+    function updateActiveChip(){
+    const cat = CATS.find(x=>x.key===state.cat) || CATS[0];
+    const text = (state.cat==='ALL') ? '全部文章' : `於 ${cat.key} 分類文章`;
+    $chip.textContent = text;
+
+    // 1) Set class as before (for accessibility / fallback)
+    $chip.className = `active-chip ${cat.cls}`;
+
+    // 2) Force the exact color from the selected button into the chip
+    const btn = document.querySelector(`.cat-btn.${cat.cls}.active`);
+    const c = getCatColorFrom(btn) || getCatColorFrom(document.querySelector(`.cat-btn.${cat.cls}`));
+    if (c) {
+      // Write the variable onto the chip so CSS uses the same tone
+      $chip.style.setProperty('--c', c);
+    } else {
+      // Fallback to clear inline var so class map (or default) takes over
+      $chip.style.removeProperty('--c');
+    }
+  }
+
+  // Read the category color (CSS var --c) from a button
+  function getCatColorFrom(el){
+    if (!el) return '';
+    const cs = getComputedStyle(el);
+    // Try to read the CSS variable directly
+    const varC = cs.getPropertyValue('--c').trim();
+    if (varC) return varC;
+
+    // Fallback: derive from computed border-color if needed
+    const bc = cs.borderColor || '';
+    return bc && bc !== 'rgba(0, 0, 0, 0)' ? bc : '';
+  }
+
+    function matchCat(it,cat){
+      if(cat==='ALL') return true;
+      return Array.isArray(it.cats) ? it.cats.includes(cat) : (it['分類']===cat);
+    }
+    function s(v){return (v??'').toString();}
+
+    function renderList(){
+      const q = state.q.toLowerCase().trim();
+      const arr=(DATA||[]).filter(it=>(
+        matchCat(it,state.cat) &&
+        (!q || (s(it.name)+' '+(Array.isArray(it.cats)?it.cats.join(' '):s(it['分類']))).toLowerCase().includes(q))
+      ));
+      arr.sort((a,b)=>s(b.date).localeCompare(s(a.date)));
+
+      $list.innerHTML='';
+      arr.forEach(r=>{
+        const li=document.createElement('div'); li.className='item';
+        const dt=document.createElement('div'); dt.className='date'; dt.textContent=s(r.date);
+        const tt=document.createElement('div'); tt.className='title';
+        const a=document.createElement('a'); a.href=s(r.url)||'#'; a.target='_blank'; a.textContent=s(r.name)||'(未命名)';
+        tt.appendChild(a); li.appendChild(dt); li.appendChild(tt); $list.appendChild(li);
+      });
+      $count.textContent=`顯示 ${arr.length} / 共 ${DATA.length} 篇`;
+    }
+
+    function bindEvents(){
+      $q.addEventListener('input',e=>{state.q=e.target.value;renderList();});
+      window.addEventListener('scroll',()=>{$backTop.style.display=window.scrollY>200?'flex':'none';});
+      $backTop.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+    }
+
+    (async function init(){
+      renderCats();
+      bindEvents();
+      await loadData();
+      renderList();
+    })();
+  })();
+  </script>
+</body>
+</html>
+
